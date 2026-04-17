@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AndriRemove - TikTok Downloader HD</title>
+    
+    <!-- CSS & Fonts Identik -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-deep': '#05070a',
+                        'accent-glow': '#00f2ff',
+                        'accent-purple': '#7000ff',
+                        'text-dim': '#94a3b8',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #05070a; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .ambient-glow { position: absolute; border-radius: 9999px; filter: blur(100px); opacity: 0.15; pointer-events: none; z-index: -1; }
+        
+        /* Animasi Agar Mirip Versi Asli */
+        .fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(30px); }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(50px); opacity: 0; transition: all 0.4s; z-index: 1000; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        .btn-glow { box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); transition: all 0.3s; }
+        .btn-glow:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="selection:bg-accent-glow/30">
+
+    <!-- Efek Cahaya Latar -->
+    <div class="ambient-glow bg-accent-purple w-[600px] h-[600px] -top-40 -right-20"></div>
+    <div class="ambient-glow bg-accent-glow w-[400px] h-[400px] bottom-0 -left-20"></div>
+
+    <!-- Navigasi -->
+    <nav class="h-20 px-6 md:px-16 flex items-center justify-between glass sticky top-0 z-50">
+        <div class="flex flex-col">
+            <div class="text-2xl font-[900] tracking-tighter bg-gradient-to-r from-white to-accent-glow bg-clip-text text-transparent italic">AndriRemove</div>
+            <div class="text-[8px] font-bold text-accent-glow/60 tracking-[2px] uppercase -mt-1 text-left">Build by Andrison</div>
+        </div>
+        
+        <!-- Link Navigasi Lengkap -->
+        <div class="hidden md:flex gap-8 font-bold text-[12px] text-text-dim uppercase tracking-widest">
+            <a href="#" class="text-white border-b-2 border-accent-glow pb-1">Beranda</a>
+            <a href="https://tiktok.com/@andriftgg_" target="_blank" class="hover:text-accent-glow transition-colors">TikTok</a>
+            <a href="https://t.me/AndriZxcll" target="_blank" class="hover:text-accent-glow transition-colors">Telegram</a>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-6 py-16 flex flex-col items-center">
+        <!-- Judul Hero -->
+        <header class="text-center mb-16 fade-up">
+            <h1 class="text-5xl md:text-8xl font-black mb-6 tracking-tighter leading-[0.95]">
+                Unduh TikTok <br><span class="text-slate-600">No Watermark</span>
+            </h1>
+            <p class="text-text-dim text-lg md:text-xl max-w-xl mx-auto">
+                Hapus watermark video secara instan dengan kualitas Ultra HD. Cepat, gratis, dan tanpa login.
+            </p>
+        </header>
+
+        <!-- Kotak Input -->
+        <div class="w-full max-w-3xl glass p-2 rounded-[32px] flex flex-col md:flex-row gap-2 shadow-2xl mb-24 fade-up" style="animation-delay: 0.1s">
+            <div class="flex-1 flex items-center px-6 py-4">
+                <i data-lucide="link" class="w-5 h-5 text-text-dim mr-4"></i>
+                <input id="videoUrl" type="text" placeholder="Tempel link TikTok..." class="w-full bg-transparent border-none outline-none text-white text-lg font-medium">
+            </div>
+            <button onclick="handleProcess()" id="processBtn" class="bg-accent-glow text-black font-black px-12 py-4 rounded-2xl btn-glow uppercase tracking-tighter">
+                HAPUS
+            </button>
+        </div>
+
+        <!-- Area Hasil -->
+        <div id="resultArea" class="hidden w-full glass rounded-[40px] overflow-hidden text-left mb-24 fade-up">
+            <div class="flex flex-col md:flex-row">
+                <div class="w-full md:w-80 aspect-[9/16] bg-black shrink-0 relative">
+                    <video id="v-player" class="w-full h-full object-cover" controls preload="auto"></video>
+                </div>
+                <div class="p-8 md:p-12 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
+                                <img id="v-avatar" src="" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=100'">
+                            </div>
+                            <div>
+                                <h3 id="v-nickname" class="font-bold text-xl text-white">---</h3>
+                                <p id="v-uniqueid" class="text-text-dim">@---</p>
+                            </div>
+                        </div>
+                        <p id="v-title" class="text-slate-300 text-lg leading-relaxed mb-10 font-medium">---</p>
+                    </div>
+                    <a id="v-download" href="#" target="_blank" onclick="showToast('Video Siap Diunduh!')" class="bg-accent-glow text-black font-black py-5 rounded-2xl text-center btn-glow uppercase tracking-widest text-sm flex justify-center items-center gap-2">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        UNDUH DATA VIDEO
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kartu Developer Lengkap dengan Tombol Tele & TikTok -->
+        <div class="w-full glass rounded-[48px] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 text-left relative overflow-hidden fade-up" style="animation-delay: 0.2s">
+            <div class="w-40 h-40 rounded-[40px] bg-white/5 border border-white/10 flex items-center justify-center text-accent-glow shrink-0 relative z-10">
+                <i data-lucide="user" class="w-16 h-16 opacity-30"></i>
+                <div class="absolute inset-0 bg-accent-glow/5 blur-xl"></div>
+            </div>
+            <div class="text-center md:text-left w-full">
+                <span class="text-accent-glow font-bold text-xs uppercase tracking-[4px] block mb-3">Official Developer</span>
+                <h2 class="text-5xl font-black mb-4 tracking-tighter">Andrison</h2>
+                <p class="text-text-dim text-lg leading-relaxed mb-8">
+                    Pengembang Dibalik Platform <b class="text-white">AndriRemove</b>. <br>
+                    Fokus pada kecepatan dan keamanan data Anda. <br>
+                    <span class="italic font-bold text-slate-600 block mt-2 text-sm">"YANG BUAT ANDRISON JANGAN NGAKU²"</span>
+                </p>
+                
+                <!-- Tombol Social Media (Sama seperti versi React) -->
+                <div class="flex flex-wrap justify-center md:justify-start gap-4">
+                    <a href="https://tiktok.com/@andriftgg_" target="_blank" class="flex items-center gap-3 bg-white text-black px-6 py-3 rounded-2xl font-bold text-sm hover:bg-accent-glow transition-colors">
+                        <i data-lucide="video" class="w-5 h-5"></i>
+                        TIKTOK
+                    </a>
+                    <a href="https://t.me/AndriZxcll" target="_blank" class="flex items-center gap-3 glass px-6 py-3 rounded-2xl font-bold text-sm text-white hover:border-accent-glow/50 transition-colors">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                        TELEGRAM
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Admin Badge (Pojok Kanan) -->
+    <div class="fixed bottom-10 right-6 hidden md:block fade-up" style="animation-delay: 0.5s">
+        <a href="https://t.me/AndriZxcll" target="_blank" class="glass p-4 rounded-2xl flex items-center gap-4 hover:border-accent-glow/50 transition-all">
+            <div class="w-10 h-10 rounded-full bg-accent-glow/10 flex items-center justify-center text-accent-glow">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div class="text-left leading-none">
+                <p class="text-[10px] font-bold text-accent-glow uppercase tracking-tighter mb-1">Developer</p>
+                <p class="text-white font-black text-xs">ANDRISON</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Footer Stats Lengkap -->
+    <footer class="glass border-none flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 text-[10px] text-text-dim font-bold uppercase tracking-[4px] py-10 mt-10 fade-up">
+        <div class="hidden md:block italic text-slate-600">YANG BUAT ANDRISON JANGAN NGAKU²</div>
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-2">Total Terunduh: <span class="text-white" id="dlCount">0</span></div>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="https://tiktok.com/@andriftgg_" target="_blank" class="hover:text-accent-glow transition-colors">TikTok</a>
+            <a href="https://t.me/AndriZxcll" target="_blank" class="hover:text-accent-glow transition-colors">Telegram</a>
+        </div>
+    </footer>
+
+    <!-- Notifikasi Sukses -->
+    <div id="toast" class="toast glass border-accent-glow/30 px-8 py-4 rounded-2xl text-accent-glow font-bold flex items-center gap-3 shadow-2xl min-w-[280px] justify-center">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        <span id="toast-msg">Video Berhasil Dimuat!</span>
+    </div>
+
+    <script>
+        // Start Lucide Icons
+        lucide.createIcons();
+        let dl = 0;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        async function handleProcess() {
+            const url = document.getElementById('videoUrl').value.trim();
+            const btn = document.getElementById('processBtn');
+            const resArea = document.getElementById('resultArea');
+
+            if (!url) return alert("Tempel link TikTok dulu!");
+
+            btn.innerText = "PROSES...";
+            btn.disabled = true;
+
+            try {
+                // Langsung panggil API
+                const resp = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
+                const res = await resp.json();
+
+                if (res.code === 0) {
+                    const d = res.data;
+                    document.getElementById('v-player').src = d.play;
+                    document.getElementById('v-avatar').src = d.author.avatar;
+                    document.getElementById('v-nickname').innerText = d.author.nickname;
+                    document.getElementById('v-uniqueid').innerText = "@" + d.author.unique_id;
+                    document.getElementById('v-title').innerText = d.title || "Video TikTok HD";
+                    document.getElementById('v-download').href = d.play;
+                    
+                    resArea.classList.remove('hidden');
+                    dl++;
+                    document.getElementById('dlCount').innerText = dl;
+                    showToast("Video Berhasil Dimuat!");
+                    
+                    // Smooth scroll ke bawah
+                    window.scrollTo({ top: resArea.offsetTop - 100, behavior: 'smooth' });
+                } else {
+                    alert("Link tidak valid atau video tidak ditemukan.");
+                }
+            } catch (e) {
+                alert("Gagal koneksi API. Coba pastikan format link benar.");
+            } finally {
+                btn.innerText = "HAPUS";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
